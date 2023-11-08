@@ -1,0 +1,4 @@
+//파일 업로드
+git add .
+git commit -m "내용"
+git push origin master
