@@ -1,1 +1,0 @@
-pyinstaller --onefile --windowed --name TWCV_Micro --icon="TW.ico" C:\tinywave_2\2_Function\Main\MIcro_main.py
