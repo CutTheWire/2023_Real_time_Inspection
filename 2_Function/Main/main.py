@@ -2,9 +2,9 @@ import os
 import sys
 import cv2
 import numpy as np
-import re
 import signal
 import copy
+import gc
 from multiprocessing import Pool
 import tkinter as tk
 from tkinter import font
@@ -12,7 +12,6 @@ from tkinter import messagebox
 from PyQt5.QtWidgets import QApplication
 import matplotlib
 matplotlib.use("Qt5Agg")  # 원하는 백엔드로 변경
-import matplotlib.pyplot as plt
 from screeninfo import get_monitors
 
 from IMG.IPP import ImageCV
@@ -164,9 +163,11 @@ if __name__ == "__main__":
         loading_screen.show()
 
         # ThreadPoolExecutor 객체 생성
-        p = Pool(processes=6)
+        p = Pool(processes=1)
 
         loading_screen.close()
+        del loading_screen
+        gc.collect()
         app.mvapp.main()
 
         IC = ImageCV()
@@ -179,7 +180,7 @@ if __name__ == "__main__":
                 frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
                 # 이미지 크기 가져오기
                 height, width, _ = frame.shape
-
+                del _
                 # 상단, 하단, 좌측, 우측에서 200픽셀씩 잘라내기
                 sli_ig = 300
                 bottom = height - sli_ig
@@ -188,22 +189,34 @@ if __name__ == "__main__":
                 frame = frame[sli_ig*2:bottom, sli_ig:right]
                 framea = copy.deepcopy(frame)
                 frame, num = ob.get(frame, bottom-sli_ig*2, right-sli_ig)
+                del bottom, right, sli_ig, height, width
+
                 if num != 0:
                     framea = p.apply(IC.edit, args=(framea, num))
+                    del num
                     mask = p.apply(IC.Mask, args=(framea, 85))
                     p.apply(SV.nut_image_save, args=(mask,))
                     defects_num, ssim_value = p.apply(DD, args=(mask,))
-                    image_tk = IC.image_tk(framea)
-                    app.video_label_2_update(image_tk)
+                    del mask
+                    image_tk1 = IC.image_tk(framea)
+                    app.video_label_2_update(image_tk1)
+                    del image_tk1
+                    
 
                     if defects_num == 1:
                         app.text_label.config(text="정상", fg="#35B558")
                     elif defects_num == 0:
                         app.text_label.config(text=f"불량\n유사도 : {round(ssim_value, 2)}", fg="#B43437")
+                    else:
+                        app.text_label.config(text=f"확인 필요\n유사도 : {round(ssim_value, 2)}", fg="#C7C53A")
+
+                    del ssim_value
 
                 image_tk = IC.image_tk(frame)
                 app.video_label_update(image_tk)
+                del image_tk
                 root.update()
+                gc.collect()
 
         root.mainloop()
         # 카메라 종료.

@@ -1,5 +1,5 @@
 import base64
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import Qt, QPoint
 from screeninfo import get_monitors

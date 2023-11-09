@@ -1,13 +1,8 @@
 #coding=utf-8
-import cv2
 import numpy as np
 import IMG.mvsdk as mvsdk
-import time
 import platform
 import copy
-from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import Qt
 
 class App(object):
     def __init__(self):

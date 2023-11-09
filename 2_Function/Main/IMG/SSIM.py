@@ -1,10 +1,7 @@
 import cv2
 import numpy as np
 import base64
-import os
 from PIL import Image
-from torch.autograd import Variable
-import torch
 import pytorch_msssim
 import torchvision.transforms as transforms
 
@@ -36,15 +33,24 @@ def detect_defects(frame: np.ndarray):
         frame = frame[0:base64_height, 0:base64_width]
     frame = cv2.resize(frame, (base64_width, base64_height))
 
+    del img_height, img_width, base64_width, base64_height
+
     # 이미지를 PyTorch 텐서로 변환합니다.
     frame = Image.fromarray(frame)
     frame = transform(frame).unsqueeze(0)
 
     # CW-SSIM을 계산합니다.
     ssim_value = pytorch_msssim.ssim(img_chisqr, frame)
-    print(ssim_value.item()*100)
+    ssim_value = ssim_value.item()*100
+    del img_chisqr, frame
 
-    if 98.01 < ssim_value.item()*100:
-        return 1, ssim_value.item()*100
+    print(ssim_value)
+    with open('C:\\Users\\sjmbe\\TW\\NUT\\ssim_values_1.txt', 'a') as f:
+        f.write(str(ssim_value) + '\n')  # ssim_value를 문자열로 변환한 후에 파일에 씁니다.
+
+    if 97.65 < ssim_value:
+        return 1, ssim_value
+    elif 97.65 >= ssim_value and 97.55 < ssim_value:
+        return 2, ssim_value
     else:
-        return 0, ssim_value.item()*100
+        return 0, ssim_value

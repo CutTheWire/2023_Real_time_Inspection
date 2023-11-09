@@ -1,1 +1,1 @@
-pyinstaller --onefile --windowed --name TWRTI --icon="TW.ico" C:\tinywave_3\2_Function\Main\main.py
+pyinstaller --onefile --windowed --name TWRT --icon="TW.ico" C:\tinywave_3\2_Function\Main\main.py

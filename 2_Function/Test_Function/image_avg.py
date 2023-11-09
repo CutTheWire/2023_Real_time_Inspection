@@ -29,13 +29,14 @@ for img_file in img_files:
 
 # 이미지의 개수로 나눠 평균을 구합니다.
 avg_img = (pixel_sum / len(img_files)).astype(np.uint8)
-(_ ,aavg_img)= cv2.threshold(avg_img, 150, 255, cv2.THRESH_BINARY)
+(_ ,aavg_img)= cv2.threshold(avg_img, 80, 255, cv2.THRESH_TOZERO)
 
 cv2.imshow("",aavg_img)
+cv2.imshow("1",avg_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 # 이미지를 base64 데이터로 변환합니다.
-_, buffer = cv2.imencode('.png', avg_img)
+_, buffer = cv2.imencode('.png', aavg_img)
 img_base64 = base64.b64encode(buffer)
 
 # base64 데이터를 텍스트 파일로 저장합니다.
