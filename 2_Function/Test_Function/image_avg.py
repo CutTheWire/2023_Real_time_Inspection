@@ -4,7 +4,7 @@ import os
 import base64
 
 # 이미지 디렉토리 설정
-img_dir = "C:\\Users\\sjmbe\\TW\\NUT\\231108\\1"
+img_dir = "C:\\Users\\sjmbe\\TW\\NUT\\231109"
 
 # 이미지 파일들을 모두 불러옵니다.
 img_files = [f for f in os.listdir(img_dir) if os.path.isfile(os.path.join(img_dir, f))]
@@ -29,7 +29,9 @@ for img_file in img_files:
 
 # 이미지의 개수로 나눠 평균을 구합니다.
 avg_img = (pixel_sum / len(img_files)).astype(np.uint8)
-cv2.imshow("",avg_img)
+(_ ,aavg_img)= cv2.threshold(avg_img, 150, 255, cv2.THRESH_BINARY)
+
+cv2.imshow("",aavg_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 # 이미지를 base64 데이터로 변환합니다.
@@ -37,5 +39,5 @@ _, buffer = cv2.imencode('.png', avg_img)
 img_base64 = base64.b64encode(buffer)
 
 # base64 데이터를 텍스트 파일로 저장합니다.
-with open('C:\\Users\\sjmbe\\TW\\NUT\\231108\\1_avg_img_base64.txt', 'w') as f:
+with open('C:\\Users\\sjmbe\\TW\\NUT\\1_avg_img_base64.txt', 'w') as f:
     f.write(img_base64.decode())

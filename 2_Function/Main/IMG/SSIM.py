@@ -15,7 +15,7 @@ def detect_defects(frame: np.ndarray):
     img_data = base64.b64decode(B64D.Avg_image_base64)
     nparr = np.frombuffer(img_data, np.uint8)
     img_chisqr = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-    base64_height, base64_width = 225, 284
+    base64_height, base64_width = img_chisqr.shape
 
     # 이미지를 PyTorch 텐서로 변환합니다.
     transform = transforms.Compose([transforms.ToTensor()])
@@ -42,8 +42,9 @@ def detect_defects(frame: np.ndarray):
 
     # CW-SSIM을 계산합니다.
     ssim_value = pytorch_msssim.ssim(img_chisqr, frame)
+    print(ssim_value.item()*100)
 
-    if 98.1 < ssim_value.item()*100:
-        return 1
+    if 98.01 < ssim_value.item()*100:
+        return 1, ssim_value.item()*100
     else:
-        return 0
+        return 0, ssim_value.item()*100

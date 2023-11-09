@@ -22,11 +22,11 @@ class object_get:
                 min_y = np.min(hull[:, :, 1])
                 max_y = np.max(hull[:, :, 1])
 
-                if min_y <= horizontal_line_y and min_y >= horizontal_line_y - 50:
+                if min_y <= horizontal_line_y and min_y >= horizontal_line_y - 65:
                     current_time = datetime.datetime.now()
 
                     # 마지막으로 카운트된 시간이 없거나, 마지막으로 카운트된 시간으로부터 0.5초 이상 경과한 경우에만 카운트합니다.
-                    if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 0.35:
+                    if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 0.30:
                         self.last_counted_time = current_time
                         x, y, w, h = cv2.boundingRect(contour)
                         return frame, (x,y,w,h)

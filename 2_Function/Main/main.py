@@ -164,7 +164,7 @@ if __name__ == "__main__":
         loading_screen.show()
 
         # ThreadPoolExecutor 객체 생성
-        p = Pool(processes=4)
+        p = Pool(processes=6)
 
         loading_screen.close()
         app.mvapp.main()
@@ -191,13 +191,15 @@ if __name__ == "__main__":
                 if num != 0:
                     framea = p.apply(IC.edit, args=(framea, num))
                     mask = p.apply(IC.Mask, args=(framea, 85))
-                    defects_num = p.apply(DD, args=(mask,))
+                    p.apply(SV.nut_image_save, args=(mask,))
+                    defects_num, ssim_value = p.apply(DD, args=(mask,))
                     image_tk = IC.image_tk(framea)
                     app.video_label_2_update(image_tk)
+
                     if defects_num == 1:
                         app.text_label.config(text="정상", fg="#35B558")
                     elif defects_num == 0:
-                        app.text_label.config(text="불량", fg="#B43437")
+                        app.text_label.config(text=f"불량\n유사도 : {round(ssim_value, 2)}", fg="#B43437")
 
                 image_tk = IC.image_tk(frame)
                 app.video_label_update(image_tk)

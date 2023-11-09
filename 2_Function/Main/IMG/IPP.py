@@ -174,9 +174,9 @@ class ImageCV:
 
     def edit(self, frame: np.ndarray, num: tuple) -> np.ndarray:
         x, y, w, h = num
-        wp = int(w*0.19)
-        hp1 = int(h*0.09)
-        hp2 = int(h*0.29)
+        wp = int(w*0.25)
+        hp1 = int(h*0.18)
+        hp2 = int(h*0.31)
         framea = frame[y+hp1:(y+h)-hp2, x+wp:(x+w)-wp]
         return framea
 '''
