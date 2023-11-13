@@ -189,7 +189,6 @@ if __name__ == "__main__":
             sys.exit()
         else:
             pass
-
         del loading_screen
 
         while end:
