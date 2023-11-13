@@ -6,7 +6,6 @@ import copy
 
 class App(object):
     def __init__(self):
-        super(App, self).__init__()
         self.pFrameBuffer = 0
         self._frame = None
 
@@ -15,14 +14,12 @@ class App(object):
         DevList = mvsdk.CameraEnumerateDevice()
         nDev = len(DevList)
         if nDev < 1:
-            print("카메라를 찾을 수 없습니다!")
-            return
-
+            return "카메라를 찾을 수 없습니다!"
+            
         for i, DevInfo in enumerate(DevList):
             print("{}: {} {}".format(i, DevInfo.GetFriendlyName(), DevInfo.GetPortType()))
         i = 0 if nDev == 1 else int(input("카메라 선택: "))
         DevInfo = DevList[i]
-        print(DevInfo)
 
         # 카메라
         hCamera = 0
@@ -31,8 +28,7 @@ class App(object):
         try:
             hCamera = mvsdk.CameraInit(DevInfo, -1, -1)
         except mvsdk.CameraException as e:
-            print("카메라 초기화 실패({}): {}".format(e.error_code, e.message) )
-            return
+            return f"카메라 초기화 실패 {e}"
 
         # 카메라 기능 확인
         cap = mvsdk.CameraGetCapability(hCamera)
