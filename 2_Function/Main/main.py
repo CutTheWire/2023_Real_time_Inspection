@@ -160,7 +160,7 @@ def process(framea, num):
     size = IC.Scale_Resolution(framea, 2)
     framea = cv2.resize(framea, size)
     
-    return defects_num, ssim_value, framea            
+    return defects_num, ssim_value, framea
 
 if __name__ == "__main__":
     T = TW()
@@ -205,7 +205,7 @@ if __name__ == "__main__":
                     break
                 del image_tk
 
-                if num != 0: 
+                if num != 0:
                     try:
                         result = p.apply_async(process, args=(framea, num))
                         defects_num, ssim_value, framea = result.get()
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                     except:
                         end = False
                         break
-                    del image_tk1     
+                    del image_tk1
 
                     if defects_num == 1:
                         app.text_label.config(text="정상", fg="#35B558")
@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
                     Ar.move(defects_num)
                     # SV.nut_image_save(framea, defects_name, ssim_value)
-                    time.sleep(0.01)          
+                    time.sleep(0.01)
             
                 
         root.mainloop()
