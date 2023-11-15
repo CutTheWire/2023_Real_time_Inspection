@@ -11,6 +11,7 @@ class object_get:
     def __init__(self) -> None:
         self.last_counted_time = None
         self.min_contour_size = 10000
+        self.max_contour_size = 40000
         self.sub_line_y = 150
         self.sub_line_x = 400
 
@@ -22,7 +23,7 @@ class object_get:
 
         contours, _ = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         del gray, binary
-        contours = list(filter(lambda cnt: cv2.contourArea(cnt) >= self.min_contour_size, contours))
+        contours = list(filter(lambda cnt: cv2.contourArea(cnt) >= self.min_contour_size and cv2.contourArea(cnt) <= self.max_contour_size, contours))
         
         # 수직선 그리기
         cv2.line(frame, (self.sub_line_x, horizontal_line_y- self.sub_line_y), (self.sub_line_x, height), (255, 255, 255), 2)  # 왼쪽 수직선
@@ -42,7 +43,7 @@ class object_get:
             if min_y <= horizontal_line_y and min_y >= horizontal_line_y - self.sub_line_y:
                 current_time = datetime.datetime.now()
 
-                if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 0.55:
+                if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 0.6:
                     self.last_counted_time = current_time
                     del current_time
                     x, y, w, h = cv2.boundingRect(hull)
