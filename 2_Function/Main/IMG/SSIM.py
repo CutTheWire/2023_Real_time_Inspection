@@ -1,5 +1,6 @@
 import cv2
 import os
+from datetime import datetime
 import numpy as np
 import base64
 from PIL import Image
@@ -7,8 +8,9 @@ import pytorch_msssim
 import torchvision.transforms as transforms
 
 import DATA.base64_data as B64D
-
+num = 0
 def detect_defects(frame: np.ndarray):
+    global num
     # base64 데이터를 이미지로 변환합니다.
     img_data = base64.b64decode(B64D.Avg_image_base64)
     nparr = np.frombuffer(img_data, np.uint8)
@@ -44,20 +46,10 @@ def detect_defects(frame: np.ndarray):
     ssim_value = pytorch_msssim.ssim(img_chisqr, frame)
     ssim_value = ssim_value.item()*100
     del img_chisqr, frame
-
-    try:
-        # 현재 사용자의 홈 디렉토리 경로를 가져옵니다.
-        home_dir = os.path.expanduser('~')
-
-        # 홈 디렉토리 아래의 TW/NUT 폴더 안의 ssim_values_1.txt 파일을 열어줍니다.
-        with open(os.path.join(home_dir, 'TW', 'NUT', 'ssim_values_1.txt'), 'a') as f:
-            f.write(str(ssim_value) + '\n')  # ssim_value를 문자열로 변환한 후에 파일에 씁니다.
-    except:
-        pass
     
     if 97.65 < ssim_value:
         return 1, ssim_value
-    elif 97.65 >= ssim_value and 97.55 < ssim_value:
+    elif 97.45 >= ssim_value and 97.25 < ssim_value:
         return 2, ssim_value
     else:
         return 0, ssim_value

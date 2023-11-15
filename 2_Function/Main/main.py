@@ -11,8 +11,6 @@ import tkinter as tk
 from tkinter import font
 from tkinter import messagebox
 from multiprocessing import Pool
-import matplotlib
-matplotlib.use("Qt5Agg")  # 원하는 백엔드로 변경
 from screeninfo import get_monitors
 
 from IMG.IPP import ImageCV
@@ -23,6 +21,7 @@ from IMG.SSIM import detect_defects as DD
 
 from TW.TWSM import TW
 from TW.Loading import LoadingScreen
+from TW.micro_servo import Ardu
 
 import DATA.base64_data as B64D
 
@@ -151,19 +150,16 @@ class MainView:
 
 IC = ImageCV()
 ob = object_get()
-SV = save("NUT", "SUA502M")
 
 def process(framea, num):
     framea = IC.edit(framea, num)
     del num
 
     mask = IC.Mask(framea, 85)
-    SV.nut_image_save(mask)
     defects_num, ssim_value = DD(mask)
-    del mask
-
     size = IC.Scale_Resolution(framea, 2)
     framea = cv2.resize(framea, size)
+    
     return defects_num, ssim_value, framea            
 
 if __name__ == "__main__":
@@ -180,8 +176,9 @@ if __name__ == "__main__":
         app = MainView(root, mvapp)
         loading_screen.close()
         root.deiconify()
-        
         p = Pool(processes=2)
+        SV = save("NUT")
+        Ar = Ardu("COM4")
 
         n = mvapp.main()
         if type(n) == str:
@@ -198,8 +195,6 @@ if __name__ == "__main__":
                 width, height = IC.Scale_Resolution(frame, 0.6)
                 frame = cv2.resize(frame, (width, height))
                 framea = copy.deepcopy(frame)
-                # result =  p.apply_async(process_get, args=((frame, width, height),))
-                # frame, num = result.get()
                 frame, num = ob.get(frame, width, height)
                 try:
                     image_tk = IC.image_tk(frame)
@@ -209,6 +204,7 @@ if __name__ == "__main__":
                     end = False
                     break
                 del image_tk
+
                 if num != 0: 
                     try:
                         result = p.apply_async(process, args=(framea, num))
@@ -218,16 +214,22 @@ if __name__ == "__main__":
                     except:
                         end = False
                         break
-                    del image_tk1  
+                    del image_tk1     
 
                     if defects_num == 1:
                         app.text_label.config(text="정상", fg="#35B558")
+                        defects_name = "정상"
                     elif defects_num == 0:
                         app.text_label.config(text=f"불량", fg="#B43437")
+                        defects_name = "불량"
                     else:
-                        app.text_label.config(text=f"확인 필요\n유사도 : {round(ssim_value, 2)}", fg="#C7C53A")
-                    del ssim_value            
-            time.sleep(0.01)
+                        app.text_label.config(text=f"확인 필요 \n유사도 : {round(ssim_value, 2)}", fg="#C7C53A")
+                        defects_name = "확인필요"
+
+                    Ar.move(defects_num)
+                    # SV.nut_image_save(framea, defects_name, ssim_value)
+                    time.sleep(0.01)          
+            
                 
         root.mainloop()
         gc.collect()

@@ -2,4 +2,4 @@ cd C:\yolo_folder
 venv_39/Scripts/activate
  cd D:\tinywave_3\
 
-pyinstaller --onefile --add-data="D:\tinywave_3\2_Function\Main\DATA\BinggraeTaom.ttf;." --name TWRT --icon="TW.ico" C:\tinywave_3\2_Function\Main\main.py
+pyinstaller --onefile --add-data="C:\2023_Real_time_Inspection\2_Function\Main\DATA\BinggraeTaom.ttf;." --name TWRT --icon="TW.ico" C:\2023_Real_time_Inspection\2_Function\Main\main.py
