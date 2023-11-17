@@ -9,7 +9,7 @@ from screeninfo import get_monitors
 import DATA.base64_data as logo
 
 class LoadingScreen(QWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle(" ")
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.WindowTransparentForInput)
@@ -37,7 +37,7 @@ class LoadingScreen(QWidget):
         center_point = self.calculateCenterPoint()
         self.moveCenter(center_point)
 
-    def calculateCenterPoint(self):
+    def calculateCenterPoint(self) -> QPoint:
         monitors = get_monitors()
         x = 0
         y = 0
@@ -51,14 +51,14 @@ class LoadingScreen(QWidget):
         else:
             return QPoint(x, y)
 
-    def moveCenter(self, point):
+    def moveCenter(self, point: QPoint) -> None:
         qr = self.frameGeometry()
         qr.moveCenter(point)
         self.move(qr.topLeft())
 
-    def show(self):
+    def show(self) -> None:
         super().show()
 
-    def close(self):
+    def close(self) -> None:
         # 로딩 창을 닫음
         super().close()

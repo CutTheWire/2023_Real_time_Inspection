@@ -6,6 +6,7 @@ import numpy as np
 import signal
 import copy
 import gc
+from typing import Type, Union, Tuple
 
 import tkinter as tk
 from tkinter import font
@@ -24,7 +25,7 @@ from TW.micro_servo import Ardu
 import DATA.base64_data as B64D
 
 class MainView:
-    def __init__(self, root, mvapp):
+    def __init__(self, root: tk.Tk, mvapp: Type[App]) -> None:
         if getattr(sys, 'frozen', False):
             # 애플리케이션이 번들링된 경우
             font_path = os.path.join(sys._MEIPASS, "BinggraeTaom.ttf")
@@ -124,22 +125,21 @@ class MainView:
         self.unit_name = "empty"
         self.mvapp = mvapp
 
-    def exit_clicked(self):
+    def exit_clicked(self) -> None:
         result = messagebox.askquestion("Exit Confirmation", "프로그램을 종료 하시겠습니까?")
         if result == "yes":
-            end = False
             self.mvapp.exit()
             # 현재 프로세스 ID를 얻어 종료
             os.kill(os.getpid(), signal.SIGTERM)
 
-    def video_label_update(self, image: np.ndarray):
+    def video_label_update(self, image: np.ndarray) -> None:
         self.image = image
         self.video_label.configure(image=image)
         self.video_label.image = image
         self.photo_path_or = ""
         self.photo_path_sc = ""
 
-    def video_label_2_update(self, image: np.ndarray):
+    def video_label_2_update(self, image: np.ndarray) -> None:
         self.image = image
         self.video_label_2.configure(image=image)
         self.video_label_2.image = image
@@ -148,7 +148,18 @@ class MainView:
 
 IC = ImageCV()
 
-def process(framea, num):
+def check() -> bool:
+    T = TW()
+    if T() == True:
+        return True 
+    elif T() == False:
+        messagebox.showinfo("SM ERROR", "해당 프로그램은 설정된 컴퓨터에서 실행 가능합니다.\n변경을 원할 경우 업체에 요청하시길 바랍니다.")
+    elif T() == 2:
+        messagebox.showinfo("OS ERROR", "해당 프로그램은 Windows10 이상에서만 실행 가능합니다.")
+    else:
+        messagebox.showinfo("ERROR", T())
+
+def process(framea: np.ndarray, num: int) -> Tuple[int, float, np.ndarray]:
     framea = IC.edit(framea, num)
     mask = IC.Mask(framea, 85)
     defects_num, ssim_value = DD(mask)
@@ -161,17 +172,21 @@ if __name__ == "__main__":
     T = TW()
     root = tk.Tk()
     root.withdraw()
-    if T() == True:
+    HW_result = check()
+
+    if HW_result == True:
         end = True
 
         loading_screen = LoadingScreen()
         loading_screen.show()
+
         mvapp = App()
         ob = object_get()
         SV = save("NUT")
         Ar = Ardu()
         p = Pool(processes=2)
         app = MainView(root, mvapp)
+
         loading_screen.close()
         root.deiconify()
 
@@ -231,17 +246,10 @@ if __name__ == "__main__":
         # 카메라 종료.
         p.close
         p.join
+
         try:
             root.destroy()
         except tk.TclError:
             pass
+
         os.kill(os.getpid(), signal.SIGTERM)
-
-    elif T() == False:
-        messagebox.showinfo("SM ERROR", "해당 프로그램은 설정된 컴퓨터에서 실행 가능합니다.\n변경을 원할 경우 업체에 요청하시길 바랍니다.")
-
-    elif T() == 2:
-        messagebox.showinfo("OS ERROR", "해당 프로그램은 Windows10 이상에서만 실행 가능합니다.")
-
-    else:
-        messagebox.showinfo("ERROR", T())

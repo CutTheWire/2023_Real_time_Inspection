@@ -3,13 +3,14 @@ import numpy as np
 import IMG.mvsdk as mvsdk
 import platform
 import copy
+from typing import Any
 
 class App(object):
-    def __init__(self):
+    def __init__(self) -> None:
         self.pFrameBuffer = 0
         self._frame = None
 
-    def main(self):
+    def main(self) -> str:
         # 카메라 열거
         DevList = mvsdk.CameraEnumerateDevice()
         nDev = len(DevList)
@@ -62,7 +63,7 @@ class App(object):
         mvsdk.CameraSetCallbackFunction(hCamera, self.GrabCallback, 0)
 
     @mvsdk.method(mvsdk.CAMERA_SNAP_PROC)
-    def GrabCallback(self, hCamera, pRawData, pFrameHead, pContext):
+    def GrabCallback(self, hCamera: Any, pRawData: Any, pFrameHead: Any, pContext: Any) -> None:
         FrameHead = pFrameHead[0]
         pFrameBuffer = self.pFrameBuffer
         try:
@@ -84,14 +85,14 @@ class App(object):
             pass
 
     @property
-    def frame(self):
+    def frame(self) -> np.ndarray:
         return self._frame
     
     @frame.setter
-    def frame(self, frame):
+    def frame(self, frame: np.ndarray):
         self._frame = frame
 
-    def exit(self):
+    def exit(self) -> None:
         # 카메라 종료
         mvsdk.CameraUnInit(self.hCamera)
         # 프레임 버퍼 해제

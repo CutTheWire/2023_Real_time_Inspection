@@ -16,7 +16,7 @@ class save:
         self.date_folder = os.path.join(self.sub_folder, datetime.today().strftime('%y%m%d'))
         self.num = self.get_last_num(self.date_folder) + 1
 
-    def get_last_num(self, folder):
+    def get_last_num(self, folder: str) -> None:
         try:
             file_list = os.listdir(folder)
             num_list = [int(re.findall(r'\d+', i)[0]) for i in file_list if re.findall(r'\d+', i)]
@@ -24,12 +24,12 @@ class save:
         except:
             return 0
 
-    def unit_folder_edit(self, defect_name: str):
+    def unit_folder_edit(self, defect_name: str) -> None:
         self.unit_folder = os.path.join(self.date_folder, defect_name)
         if not os.path.exists(self.unit_folder):
             os.mkdir(self.unit_folder)
 
-    def nut_image_save(self, frame: np.ndarray, defects_name: str, ssim_value: float):
+    def nut_image_save(self, frame: np.ndarray, defects_name: str, ssim_value: float) -> None:
         self.unit_folder_edit(defects_name)
 
         unit_name = str(round(ssim_value,4)).replace(".","_")
@@ -113,7 +113,7 @@ class ImageCV:
         
         return
 
-    def Pos_by_Img(self, image, pos):
+    def Pos_by_Img(self, image: np.ndarray, pos: np.ndarray) -> np.ndarray:
         image = self.Image_Crop(image, pos, (900,1200))
         image = self.Image_Slice(image, height_value=0.02, width_value=0.02)
         image = self.Brightness(image)
@@ -205,7 +205,7 @@ class ImageCV:
         new_image[top_padding:, :] = image
         return new_image
 
-    def image_tk(self, video_label_image):
+    def image_tk(self, video_label_image: np.ndarray) -> np.ndarray:
         image_tk = ImageTk.PhotoImage(
                         Image.fromarray(
                             cv2.cvtColor(video_label_image, cv2.COLOR_BGR2RGB)

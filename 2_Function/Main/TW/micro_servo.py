@@ -1,11 +1,12 @@
 import serial.tools.list_ports
 import time
+from typing import Union
 
 class Usb:
     def __init__(self) -> None:
         self.port = "COM1"
 
-    def get(self) -> str | None:
+    def get(self) -> Union[str, None]:
         ports = serial.tools.list_ports.comports()
         for self.port, desc, _ in sorted(ports):
             if "Arduino" in desc:
@@ -29,5 +30,5 @@ class Ardu(Usb):
             self.arduino.write(arg.encode())
             time.sleep(0.5)
     
-    def __del__(self):
+    def __del__(self) -> None:
         self.arduino.close()

@@ -1,5 +1,6 @@
 import platform
 import wmi
+from typing import Union, Any
 
 class TW:
     def __init__(self) -> None:
@@ -7,7 +8,7 @@ class TW:
         self._cpu_info = None
         self._LogicalDisk = None
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Union['TW', str]) -> bool:
         if isinstance(other, TW):
             return all(item in self.result for item in other.result)
         elif isinstance(other, str):
@@ -15,7 +16,7 @@ class TW:
         else:
             return False
         
-    def __call__(self):
+    def __call__(self) -> Union[bool, Exception, int]:
         if platform.system() == 'Windows':
             try:
                 result = self.cpu_info + self.LogicalDisk
@@ -26,7 +27,7 @@ class TW:
             return 2
         
     @property
-    def cpu_info(self):
+    def cpu_info(self) -> str:
         c = wmi.WMI()
         processors = c.Win32_Processor()
         if processors:
@@ -35,7 +36,7 @@ class TW:
             return  "0000000000000000"
         
     @property
-    def LogicalDisk(self):
+    def LogicalDisk(self) -> str:
         drive = "C"
         c = wmi.WMI()
         logical_disks = c.Win32_LogicalDisk(DeviceID=drive + ":")
