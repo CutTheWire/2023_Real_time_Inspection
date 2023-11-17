@@ -13,10 +13,8 @@ from tkinter import messagebox
 from multiprocessing import Pool
 from screeninfo import get_monitors
 
-from IMG.IPP import ImageCV
+from IMG.IPP import ImageCV, save, object_get
 from IMG.cv_grab_callback import App
-from IMG.Image_Save import save
-from IMG.ob_get import object_get
 from IMG.SSIM import detect_defects as DD
 
 from TW.TWSM import TW
@@ -149,12 +147,9 @@ class MainView:
         self.photo_path_sc = ""
 
 IC = ImageCV()
-ob = object_get()
 
 def process(framea, num):
     framea = IC.edit(framea, num)
-    del num
-
     mask = IC.Mask(framea, 85)
     defects_num, ssim_value = DD(mask)
     size = IC.Scale_Resolution(framea, 2)
@@ -172,13 +167,13 @@ if __name__ == "__main__":
         loading_screen = LoadingScreen()
         loading_screen.show()
         mvapp = App()
-
+        ob = object_get()
+        SV = save("NUT")
+        Ar = Ardu()
+        p = Pool(processes=2)
         app = MainView(root, mvapp)
         loading_screen.close()
         root.deiconify()
-        p = Pool(processes=2)
-        SV = save("NUT")
-        Ar = Ardu("COM4")
 
         n = mvapp.main()
         if type(n) == str:

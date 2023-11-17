@@ -9,7 +9,6 @@ from screeninfo import get_monitors
 import DATA.base64_data as logo
 
 class LoadingScreen(QWidget):
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle(" ")

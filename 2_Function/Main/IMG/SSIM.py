@@ -9,6 +9,7 @@ import torchvision.transforms as transforms
 
 import DATA.base64_data as B64D
 num = 0
+
 def detect_defects(frame: np.ndarray):
     global num
     # base64 데이터를 이미지로 변환합니다.
