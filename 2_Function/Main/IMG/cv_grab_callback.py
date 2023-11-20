@@ -1,6 +1,8 @@
 #coding=utf-8
+import sys
 import numpy as np
 import IMG.mvsdk as mvsdk
+from tkinter import messagebox
 import platform
 import copy
 from typing import Any
@@ -29,7 +31,9 @@ class App(object):
         try:
             hCamera = mvsdk.CameraInit(DevInfo, -1, -1)
         except mvsdk.CameraException as e:
-            return f"카메라 초기화 실패 {e}"
+            messagebox.showinfo("ERROR", e)
+            sys.exit()
+            
 
         # 카메라 기능 확인
         cap = mvsdk.CameraGetCapability(hCamera)

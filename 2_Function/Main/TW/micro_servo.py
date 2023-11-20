@@ -32,3 +32,9 @@ class Ardu(Usb):
     
     def __del__(self) -> None:
         self.arduino.close()
+
+# TEST
+if __name__ == "__main__":
+    Ar = Ardu()
+    for i in  [0,1,0,1,1,2,0,1,0,1,0,1,0,1]:
+        Ar.move(i)
