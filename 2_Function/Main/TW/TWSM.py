@@ -1,5 +1,6 @@
 import platform
 import wmi
+from typing import Union, Any
 
 class TW:
     def __init__(self) -> None:
@@ -9,7 +10,7 @@ class TW:
         self._cpu_info = None
         self._LogicalDisk = None
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Union['TW', str]) -> bool:
         # 동등성을 검사하는 함수입니다.
         # other가 TW 클래스의 인스턴스이면, other의 result가 self의 result에 모두 포함되어 있는지 검사합니다.
         # other가 문자열이면, other가 self의 result에 포함되어 있는지 검사합니다.
@@ -21,7 +22,7 @@ class TW:
         else:
             return False
         
-    def __call__(self):
+    def __call__(self) -> Union[bool, Exception, int]:
         # 인스턴스를 함수처럼 호출할 수 있게 해주는 함수입니다.
         # 현재 운영체제가 Windows인 경우, cpu_info와 LogicalDisk를 합쳐 self와 동등한지 검사합니다.
         # 그렇지 않은 경우에는 2를 반환합니다.
@@ -35,7 +36,7 @@ class TW:
             return 2
         
     @property
-    def cpu_info(self):
+    def cpu_info(self) -> str:
         # CPU 정보를 반환하는 프로퍼티입니다.
         # 현재 시스템의 CPU 정보를 출력합니다.
         # CPU 정보가 없는 경우에는 "0000000000000000"을 반환합니다.
@@ -47,7 +48,7 @@ class TW:
             return  "0000000000000000"
         
     @property
-    def LogicalDisk(self):
+    def LogicalDisk(self) -> str:
         # 논리 디스크 정보를 반환하는 프로퍼티입니다.
         # 현재 시스템의 C 드라이브 논리 디스크 정보를 반환합니다.
         # 논리 디스크 정보가 없는 경우에는 "00000000"을 반환합니다.

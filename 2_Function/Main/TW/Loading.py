@@ -9,8 +9,7 @@ from screeninfo import get_monitors
 import DATA.base64_data as logo
 
 class LoadingScreen(QWidget):
-
-    def __init__(self):
+    def __init__(self) -> None:
         # 초기화 함수, 인스턴스가 생성될 때 실행됩니다.
         # 로딩 화면을 설정하고, 이미지를 표시합니다.
         super().__init__()
@@ -40,8 +39,7 @@ class LoadingScreen(QWidget):
         center_point = self.calculateCenterPoint()
         self.moveCenter(center_point)
 
-    def calculateCenterPoint(self):
-        # 화면 중앙의 좌표를 계산하는 함수입니다.
+    def calculateCenterPoint(self) -> QPoint:
         monitors = get_monitors()
         x = 0
         y = 0
@@ -55,16 +53,16 @@ class LoadingScreen(QWidget):
         else:
             return QPoint(x, y)
 
-    def moveCenter(self, point):
+    def moveCenter(self, point: QPoint) -> None:
         # 로딩 화면을 화면 중앙으로 이동시키는 함수입니다.
         qr = self.frameGeometry()
         qr.moveCenter(point)
         self.move(qr.topLeft())
 
-    def show(self):
+    def show(self) -> None:
         # 로딩 화면을 표시하는 함수입니다.
         super().show()
 
-    def close(self):
+    def close(self) -> None:
         # 로딩 창을 닫는 함수입니다.
         super().close()
