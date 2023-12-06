@@ -8,16 +8,17 @@ class Usb:
 
     def get(self) -> Union[str, None]:
         ports = serial.tools.list_ports.comports()
+        
         for self.port, desc, _ in sorted(ports):
             if "Arduino" in desc:
                 return self.port
         return self.port
 
-class Ardu(Usb):
+class Ardu:
     def __init__(self) -> None:
-        super().__init__()
-        self.port = super().get()
+        self.port = Usb().get()
         self.arduino = None  # 이 부분을 추가해주세요.
+        self.defl = "0"
         try:
             self.arduino = serial.Serial(self.port, 9600)
         except Exception as e:
@@ -27,7 +28,10 @@ class Ardu(Usb):
     def move(self, arg: int) -> None:
         arg = str(arg)
         if arg in ["1", "0", "2"]:
-            self.arduino.write(arg.encode())
+            try:
+                self.arduino.write(arg.encode())
+            except:
+                self.arduino.write(self.defl.encode())
             time.sleep(0.5)
     
     def __del__(self) -> None:
