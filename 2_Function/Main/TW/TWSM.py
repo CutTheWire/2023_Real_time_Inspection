@@ -4,7 +4,7 @@ from typing import Union, Any
 
 class TW:
     def __init__(self) -> None:
-        self.result = ["178BFBFF00800F82B45629E1", "BFEBFBFF000906A3C425D006", "BFEBFBFF00040651B6168272"]
+        self.result = ["178BFBFF00800F82B45629E1", "BFEBFBFF000906A3C425D006","BFEBFBFF00030678D2FA040C", "BFEBFBFF00040651B6168272"]
         self._cpu_info = None
         self._LogicalDisk = None
 

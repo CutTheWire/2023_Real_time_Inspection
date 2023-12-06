@@ -10,7 +10,7 @@ import re
 class save:
     def __init__(self, program: str) -> None:
         self.program = program
-        self.documents_folder = os.path.join("D:\\")
+        self.documents_folder = os.path.join("C:\\")
         self.main_folder = os.path.join(self.documents_folder, "TW")
         self.sub_folder = os.path.join(self.main_folder, self.program)
         self.date_folder = os.path.join(self.sub_folder, datetime.today().strftime('%y%m%d'))
