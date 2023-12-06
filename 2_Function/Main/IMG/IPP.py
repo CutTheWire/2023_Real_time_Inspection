@@ -10,7 +10,7 @@ import re
 class save:
     def __init__(self, program: str) -> None:
         self.program = program
-        self.documents_folder = os.path.join("D:\\")
+        self.documents_folder = os.path.join("C:\\")
         self.main_folder = os.path.join(self.documents_folder, "TW")
         self.sub_folder = os.path.join(self.main_folder, self.program)
         self.date_folder = os.path.join(self.sub_folder, datetime.today().strftime('%y%m%d'))
@@ -24,14 +24,10 @@ class save:
         except:
             return 0
 
-    def unit_folder_edit(self, defect_name: str) -> None:
-        self.unit_folder = os.path.join(self.date_folder, defect_name)
-        if not os.path.exists(self.unit_folder):
-            os.mkdir(self.unit_folder)
+
 
     def nut_image_save(self, frame: np.ndarray, defects_name: str, ssim_value: float) -> None:
-        self.unit_folder_edit(defects_name)
-
+        self.unit_folder = os.path.join(self.date_folder, defects_name)
         unit_name = str(round(ssim_value,4)).replace(".","_")
         # 폴더가 이미 존재하는지 확인 후 생성
         for f in [self.main_folder, self.sub_folder, self.date_folder, self.unit_folder]:
@@ -39,7 +35,7 @@ class save:
                 os.mkdir(f)
 
         filename = f"{self.num}_{unit_name}.png"
-        photo_path = os.path.join(self.date_folder, filename)
+        photo_path = os.path.join(self.unit_folder, filename)
         cv2.imwrite(photo_path, frame)
         self.num += 1
 
@@ -228,13 +224,13 @@ class object_get:
         self.sub_line_y = 150
         self.sub_line_x = 400
 
-    def get(self, frame: np.ndarray, width: int, height: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
+    def get(self, frame: np.ndarray, width: int, height: int, num: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
         horizontal_line_y = height // 2
         # frame의 일부를 선택하여 gray와 binary 생성
         gray = cv2.cvtColor(frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x], cv2.COLOR_BGR2GRAY)
-        _, binary = cv2.threshold(gray, 75, 255, cv2.THRESH_BINARY)
+        _, binary = cv2.threshold(gray, num, 255, cv2.THRESH_BINARY)
 
-        contours, _ = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         del gray, binary
         contours = list(filter(lambda cnt: cv2.contourArea(cnt) >= self.min_contour_size and cv2.contourArea(cnt) <= self.max_contour_size, contours))
         
@@ -256,7 +252,7 @@ class object_get:
             if min_y <= horizontal_line_y and min_y >= horizontal_line_y - self.sub_line_y:
                 current_time = datetime.now()
 
-                if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 0.6:
+                if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 1.6:
                     self.last_counted_time = current_time
                     del current_time
                     x, y, w, h = cv2.boundingRect(hull)

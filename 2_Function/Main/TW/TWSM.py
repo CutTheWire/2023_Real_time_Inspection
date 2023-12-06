@@ -4,9 +4,7 @@ from typing import Union, Any
 
 class TW:
     def __init__(self) -> None:
-        # 초기화 함수, 인스턴스가 생성될 때 실행됩니다.
-        # 프로그램이 설치된 PC의 하드웨어 고유번호 조합 리스트를 self.result에 저장합니다.
-        self.result = ["178BFBFF00800F82B45629E1", "BFEBFBFF000906A3C425D006", "BFEBFBFF00040651B6168272"] 
+        self.result = ["178BFBFF00800F82B45629E1", "BFEBFBFF000906A3C425D006","BFEBFBFF00030678D2FA040C", "BFEBFBFF00040651B6168272"]
         self._cpu_info = None
         self._LogicalDisk = None
 
