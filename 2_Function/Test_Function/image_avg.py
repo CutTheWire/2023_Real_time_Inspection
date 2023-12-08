@@ -4,7 +4,7 @@ import os
 import base64
 
 # 이미지 디렉토리 설정
-img_dir = "D:/TW/NUT/231205/X"
+img_dir = "C:/Users/sjmbe/TW/NUT/231108/1-1/11"
 
 # 이미지 파일들을 모두 불러옵니다.
 img_files = [f for f in os.listdir(img_dir) if os.path.isfile(os.path.join(img_dir, f))]
@@ -36,10 +36,25 @@ cv2.imshow("",aavg_img)
 cv2.imshow("1",avg_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
 # 이미지를 base64 데이터로 변환합니다.
 _, buffer = cv2.imencode('.png', mask)
 img_base64 = base64.b64encode(buffer)
 
-# base64 데이터를 텍스트 파일로 저장합니다.
-with open('D:/TW/NUT/X1_avg_img_base64.txt', 'w') as f:
-    f.write(img_base64.decode())
+# 저장할 폴더를 지정합니다.
+save_dir = os.path.expanduser("~/Documents/TW")
+
+# 해당 폴더가 없으면 생성합니다.
+os.makedirs(save_dir, exist_ok=True)
+
+# 원하는 파일 이름을 지정합니다.
+file_name = "avg_img"
+
+# 파일 이름에 숫자를 추가하여, 같은 이름의 파일이 없을 때까지 반복합니다.
+i = 1
+while os.path.exists(os.path.join(save_dir, f"{file_name}_{i}.ini")):
+    i += 1
+
+# .ini 파일로 저장합니다.
+with open(os.path.join(save_dir, f"{file_name}_{i}.ini"), 'w') as configfile:
+    configfile.write(img_base64.decode())

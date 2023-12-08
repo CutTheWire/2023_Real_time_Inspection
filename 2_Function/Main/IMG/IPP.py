@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-from typing import Tuple, Union
+from typing import Tuple, Union, Any
 from datetime import datetime
 import re
 
@@ -24,8 +24,6 @@ class save:
         except:
             return 0
 
-
-
     def nut_image_save(self, frame: np.ndarray, defects_name: str, ssim_value: float) -> None:
         self.unit_folder = os.path.join(self.date_folder, defects_name)
         unit_name = str(round(ssim_value,4)).replace(".","_")
@@ -34,7 +32,7 @@ class save:
             if not os.path.exists(f):
                 os.mkdir(f)
 
-        filename = f"{self.num}_{unit_name}.png"
+        filename = f"{self.num}({unit_name}).png"
         photo_path = os.path.join(self.unit_folder, filename)
         cv2.imwrite(photo_path, frame)
         self.num += 1
@@ -62,7 +60,7 @@ class ImageCV:
         return gray_image
     
     def BGR(self, image: np.ndarray) -> np.ndarray:
-        if len(image.shape) == 1:
+        if len(image.shape) == 2:
             BGR_image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         else:
             BGR_image = image
@@ -175,7 +173,7 @@ class ImageCV:
         Output : 마스크 이미지
         '''
         # 이미지를 그레이스케일로 변환
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = self.gray(image)
         # 임계값 설정 (70 이하인 부분만 선택)
         _, mask = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY_INV)
         return mask
@@ -227,7 +225,10 @@ class object_get:
     def get(self, frame: np.ndarray, width: int, height: int, num: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
         horizontal_line_y = height // 2
         # frame의 일부를 선택하여 gray와 binary 생성
-        gray = cv2.cvtColor(frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x], cv2.COLOR_BGR2GRAY)
+        if len(frame.shape) == 3:
+            gray = cv2.cvtColor(frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x], cv2.COLOR_BGR2GRAY)
+        else:
+            gray = frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x]
         _, binary = cv2.threshold(gray, num, 255, cv2.THRESH_BINARY)
 
         contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
