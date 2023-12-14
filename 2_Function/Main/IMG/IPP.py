@@ -1,6 +1,7 @@
 # Image Pre-Processing
 import os
 import cv2
+import copy
 import numpy as np
 from PIL import Image, ImageTk
 from typing import Tuple, Union, Any
@@ -27,15 +28,24 @@ class save:
     def nut_image_save(self, frame: np.ndarray, defects_name: str, ssim_value: float) -> None:
         self.unit_folder = os.path.join(self.date_folder, defects_name)
         unit_name = str(round(ssim_value,4)).replace(".","_")
+
         # 폴더가 이미 존재하는지 확인 후 생성
         for f in [self.main_folder, self.sub_folder, self.date_folder, self.unit_folder]:
             if not os.path.exists(f):
                 os.mkdir(f)
 
+        # 해당 디렉토리에 있는 파일 이름들을 확인하고 가장 큰 번호를 찾음
+        files = os.listdir(self.unit_folder)
+        if files:  # 파일이 있는 경우
+            numbers = [int(file.split('(')[0]) for file in files if file.split('(')[0].isdigit()]
+            if numbers:  # 숫자로 된 파일 이름이 있는 경우
+                self.num = max(numbers) + 1
+
         filename = f"{self.num}({unit_name}).png"
         photo_path = os.path.join(self.unit_folder, filename)
         cv2.imwrite(photo_path, frame)
         self.num += 1
+
 
 class ImageCV:
     def __init__(self) -> None:
@@ -174,7 +184,7 @@ class ImageCV:
         '''
         # 이미지를 그레이스케일로 변환
         gray = self.gray(image)
-        # 임계값 설정 (70 이하인 부분만 선택)
+        # 임계값 설정
         _, mask = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY_INV)
         return mask
     
@@ -229,10 +239,11 @@ class object_get:
             gray = cv2.cvtColor(frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x], cv2.COLOR_BGR2GRAY)
         else:
             gray = frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x]
+        edit_gray = copy.deepcopy(gray)
         _, binary = cv2.threshold(gray, num, 255, cv2.THRESH_BINARY)
 
         contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        del gray, binary
+        del binary
         contours = list(filter(lambda cnt: cv2.contourArea(cnt) >= self.min_contour_size and cv2.contourArea(cnt) <= self.max_contour_size, contours))
         
         # 수직선 그리기
@@ -243,12 +254,15 @@ class object_get:
         cv2.line(frame, (0, horizontal_line_y), (width, horizontal_line_y), (0, 0, 255), 2)
         cv2.line(frame, (0, horizontal_line_y - self.sub_line_y), (width, horizontal_line_y - self.sub_line_y), (0, 255, 255), 2)
 
+
         if contours:  # contours 리스트가 비어있지 않은 경우에만 실행
             contour = max(contours, key=cv2.contourArea)  # 가장 큰 윤곽선 선택
             hull = cv2.convexHull(contour)
             del contours, contour
+
             # frame 전체에 대해 윤곽선 그리기
             cv2.drawContours(frame[horizontal_line_y-self.sub_line_y:, self.sub_line_x:-self.sub_line_x], [hull], -1, (0, 255, 0), 3)
+
             min_y = np.min(hull[:, :, 1]) + horizontal_line_y - self.sub_line_y  # 슬라이싱으로 잘린 부분만큼 y축 위치를 보정
             if min_y <= horizontal_line_y and min_y >= horizontal_line_y - self.sub_line_y:
                 current_time = datetime.now()
@@ -256,12 +270,15 @@ class object_get:
                 if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 1.6:
                     self.last_counted_time = current_time
                     del current_time
+
                     x, y, w, h = cv2.boundingRect(hull)
-                    # bounding box 좌표 조정
-                    x += self.sub_line_x
-                    y += horizontal_line_y - self.sub_line_y  # bounding box의 y축 위치도 보정
-                    return frame, (x, y, w, h)
-        return frame, 0
+
+                    # 윤곽선 이미지 추출
+                    edit_frame = edit_gray[y:y+h, x:x+w].copy()
+
+                    return frame, (x, y, w, h), edit_frame
+
+        return frame, 0, None
 
 '''
 -------------------------------------------테스트-------------------------------------------

@@ -4,9 +4,10 @@ import sys
 import numpy as np
 import signal
 import copy
+import fasteners
 from screeninfo import get_monitors
 from typing import Tuple, Union
-from multiprocessing import Pool
+# from multiprocessing import Pool
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import Qt
 
@@ -20,17 +21,16 @@ from TW.micro_servo import Ardu
 from TW.TWSM import TW
 from TW.UI import MainView
 
-class main:
+class main(MainView):
     def __init__(self) -> None:
-        self.p = Pool(processes=2)
-        self.IC = ImageCV()
+        super().__init__()
+        # self.p = Pool(processes=1)
         self.ob = object_get()
         self.SV = save("NUT")
         self.Ar = Ardu()
         self.cam = Camera()
         self.msg = QMessageBox()
         self.msg.setIcon(QMessageBox.Warning)
-        self.end = True
 
     def Ar_check(self, loading_screen):
         if self.Ar.check():
@@ -72,42 +72,56 @@ class main:
                 retval = self.msg.exec_()
                 if retval == QMessageBox.Ok:
                     os.kill(os.getpid(), signal.SIGTERM)
+    
+    def keyPressEvent(self, event):
+        '''
+        ESC 키가 눌렸을 때
+        플래그를 False로 설정하여 while문과 창을 종료합니다.
+        '''
+        if event.key() == Qt.Key_Escape:
+            self.run = False
+            lock = fasteners.InterProcessLock('/tmp/my_lock_file')
+            lock.release()
+            lock.release()
+            self.close()
+            sys.exit()
 
     def image_thread(self, frame: np.ndarray, width, height,) -> Tuple[np.ndarray, np.ndarray, Union[int,tuple]]:
-        result = self.p.apply_async(self.ob.get, args=(frame, width, height, 80))
-        frame, num  = result.get()
-        return frame, num
+        # result = self.p.apply_async(self.ob.get, args=(frame, width, height, 80))
+        # frame, num  = result.get()
+        frame, num, edit_image  = self.ob.get(frame, width, height, self.thread_num)
+        return frame, num, edit_image
 
-    def ssim_process(self, framea: np.ndarray, num: int) -> Tuple[int, float, np.ndarray]:
+    def ssim_process(self, framea: np.ndarray) -> Tuple[int, float, np.ndarray]:
         '''
         ssim_process 함수는 이미지의 SSIM(Structural Similarity Index)를 계산
         이 함수에서는 framea 이미지를 받아서 적절한 크기로 조정하고
         이를 Mask 메소드를 사용하여 처리한 후에, DD(detect_defects) 함수를 호출합니다.
         '''
-        framea = self.IC.edit(framea, num)
-        mask = self.IC.Mask(framea, 80)
-        result = self.p.apply_async(DD, args=(mask,))
-        defects_num, ssim_value = result.get()
+        mask = self.IC.Mask(framea, self.ssim_num)
+        # result = self.p.apply_async(DD, args=(mask,))
+        # defects_num, ssim_value = result.get()
+        defects_num, ssim_value = DD(mask)
 
         size = self.IC.Scale_Resolution(framea, 2)
         framea = cv2.resize(framea, size)
-        return defects_num, ssim_value, framea
+        return defects_num, ssim_value, framea, mask
     
     def list_output(self, defects_num: int, ssim_value: float) -> str:
         if defects_num == 1:
-            MV.text_label.setText(f"정상")
-            MV.text_label.setStyleSheet("background-color: #FFFFFF; color: #35B558; font-size: 75pt; border-radius: 10px;")
-            MV.text_label.setAlignment(Qt.AlignCenter)  # Add this line
+            self.text_label.setText(f"정상")
+            self.text_label.setStyleSheet("background-color: #FFFFFF; color: #35B558; font-size: 75pt; border-radius: 10px;")
+            self.text_label.setAlignment(Qt.AlignCenter)  # Add this line
             defects_name = "O"
         elif defects_num == 0:
-            MV.text_label.setText(f"불량")
-            MV.text_label.setStyleSheet("background-color: #FFFFFF; color: #B43437; font-size: 75pt; border-radius: 10px;")
-            MV.text_label.setAlignment(Qt.AlignCenter)  # This line is already here
+            self.text_label.setText(f"불량")
+            self.text_label.setStyleSheet("background-color: #FFFFFF; color: #B43437; font-size: 75pt; border-radius: 10px;")
+            self.text_label.setAlignment(Qt.AlignCenter)  # This line is already here
             defects_name = "X"
         else:
-            MV.text_label.setText(f"확인 필요")
-            MV.text_label.setStyleSheet("background-color: #FFFFFF; color: #C7C53A; font-size: 75pt; border-radius: 10px;")
-            MV.text_label.setAlignment(Qt.AlignCenter)  # Add this line
+            self.text_label.setText(f"확인 필요")
+            self.text_label.setStyleSheet("background-color: #FFFFFF; color: #C7C53A; font-size: 75pt; border-radius: 10px;")
+            self.text_label.setAlignment(Qt.AlignCenter)  # Add this line
             defects_name = "X"
         return defects_name
 
@@ -127,38 +141,60 @@ class main:
 
     def updata_frame(self):
         frame = self.cam_check()
-        width, height = self.IC.Scale_Resolution(frame, 0.6)
+        frame = self.IC.gray(frame)
+        width, height = self.IC.Scale_Resolution(frame, 1)
         frame = cv2.resize(frame, (width, height))
         framea = copy.deepcopy(frame)
         framea= self.IC.gray(framea)
         try:
-            frame, num = self.image_thread(frame, width, height)
+            frame, num, edit_image = self.image_thread(frame, width, height)
         except:
             num = 0
-        MV.video_label_update(frame, MV.video_label_1)
+        self.video_label_update(frame, self.video_label_1)
 
         if num != 0:
-            defects_num, ssim_value, framea = self.ssim_process(framea, num)
-            # self.Ar.move(defects_num)
-            MV.video_label_update(framea, MV.video_label_2)
+            defects_num, ssim_value, framea, mask = self.ssim_process(edit_image)
+            self.Ar.move(defects_num)
+            self.video_label_update(edit_image, self.video_label_2)
             defects_name = self.list_output(defects_num, ssim_value)
-            self.SV.nut_image_save(framea, defects_name, ssim_value)
 
-
-
+            # self.SV.nut_image_save(framea, defects_name, ssim_value)
+            self.SV.nut_image_save(mask, defects_name, ssim_value)
+            self.SV.nut_image_save(edit_image, "image", ssim_value)
 if __name__ == "__main__":
-    loading_screen = LoadingScreen()
-    loading_screen.show()
-    
-    M = main()
-    app = QApplication(sys.argv)
-    M.check(loading_screen)
-    M.Ar_check(loading_screen)
-    MV = MainView(M.p)
-    M.cam.open_camera()
-    M.start()
-    MV.show()
-    loading_screen.close()
-    while MV.run:
-        M.updata_frame()
-        QApplication.processEvents()
+    # 락을 생성합니다.
+    lock = fasteners.InterProcessLock('/tmp/my_lock_file')
+    acquired = lock.acquire(blocking=False)
+
+    if not acquired:
+        # 락을 획득하지 못했으면 프로그램을 종료합니다.
+        sys.exit()
+
+    try:
+        loading_screen = LoadingScreen()
+        loading_screen.show()
+
+        M = main()
+        app = QApplication(sys.argv)
+        M.check(loading_screen)
+        M.Ar_check(loading_screen)
+        M.cam.open_camera()
+        M.start()
+        M.show()
+        loading_screen.close()
+
+        while M.run:
+            try:
+                M.updata_frame()
+            except:
+                pass
+            QApplication.processEvents()
+
+        
+    finally:
+        # 프로그램 종료 전에 락을 반드시 해제합니다.
+        if acquired:
+            lock.release()
+            os.kill(os.getpid(), signal.SIGTERM)
+            # M.p.close()
+            # M.p.join()

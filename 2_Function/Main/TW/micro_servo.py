@@ -13,7 +13,7 @@ class Usb:
         ports = serial.tools.list_ports.comports()
         
         for port_get, desc, _ in sorted(ports):
-            if "Arduino" in desc:
+            if "Arduino" in desc or "CH340" in desc:
                 self.port = port_get
                 return self.port
         return None

@@ -3,13 +3,12 @@ import numpy as np
 import base64
 import os
 from PIL import Image
-from torch.autograd import Variable
-import torch
+import matplotlib.pyplot as plt
 import pytorch_msssim
 import torchvision.transforms as transforms
 
 # base64 데이터를 불러옵니다.
-with open('C:\\Users\\sjmbe\\TW\\NUT\\231108\\1_avg_img_base64.txt', 'r') as f:
+with open('C:\\Users\\sjmbe\\TW\\NUT\\1_avg_img_base64.txt', 'r') as f:
     base64_data = f.read()
 
 # base64 데이터를 이미지로 변환합니다.
@@ -26,7 +25,9 @@ img_chisqr = transform(img_chisqr).unsqueeze(0)
 # 비교할 이미지 디렉토리 설정
 compare_dir = "C:\\Users\\sjmbe\\TW\\NUT\\231108\\1-1"
 compare_files = [f for f in os.listdir(compare_dir) if os.path.isfile(os.path.join(compare_dir, f))]
-
+# 각 이미지의 파일 이름과 SSIM 값을 저장할 두 개의 리스트를 생성합니다.
+file_names = []
+ssim_values = []
 # 각 이미지에 대해
 for compare_file in compare_files:
     # 이미지를 불러옵니다.
@@ -52,4 +53,16 @@ for compare_file in compare_files:
     # CW-SSIM을 계산합니다.
     ssim_value = pytorch_msssim.ssim(img_chisqr, img_compare)
 
-    print(f'{compare_file} SSIM: ', ssim_value.item()*100)
+    # 파일 이름과 SSIM 값을 리스트에 추가합니다.
+    file_names.append(compare_file)
+    ssim_values.append(ssim_value.item()*100)
+
+# SSIM 값을 선 그래프로 표시합니다.
+plt.figure(figsize=(10,5))
+plt.plot(file_names, ssim_values, marker='o')
+plt.xlabel('Image File')
+plt.ylabel('SSIM Value')
+plt.title('SSIM Values of Images Compared to Base64 Image')
+plt.xticks(rotation=90)  # x축 레이블을 90도 회전하여 보기 쉽게 만듭니다.
+plt.tight_layout()
+plt.show()

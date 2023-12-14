@@ -71,9 +71,9 @@ def detect_defects(frame_a: np.ndarray) -> Tuple[int, float]:
     # 가장 높은 ssim_value를 target_value로 설정합니다.
     target_value = max_ssim_value
     # target_value에 따라 다른 값을 반환합니다.
-    if 97.65 < target_value:
+    if 98.3 < target_value:
         return 1, target_value
-    elif 97.65 >= target_value and 97.25 < target_value:
+    elif 98.3 >= target_value and 97.25 < target_value:
         return 2, target_value
     else:
         return 0, target_value
