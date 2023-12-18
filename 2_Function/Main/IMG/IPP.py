@@ -228,11 +228,11 @@ class object_get:
     def __init__(self) -> None:
         self.last_counted_time = None
         self.min_contour_size = 10000
-        self.max_contour_size = 40000
+        self.max_contour_size = 50000
         self.sub_line_y = 150
         self.sub_line_x = 400
 
-    def get(self, frame: np.ndarray, width: int, height: int, num: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
+    def get(self, frame: np.ndarray, width: int, height: int, num_max: int, num_min: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
         horizontal_line_y = height // 2
         # frame의 일부를 선택하여 gray와 binary 생성
         if len(frame.shape) == 3:
@@ -240,10 +240,12 @@ class object_get:
         else:
             gray = frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x]
         edit_gray = copy.deepcopy(gray)
-        _, binary = cv2.threshold(gray, num, 255, cv2.THRESH_BINARY)
+        # 조건에 맞는 픽셀 값 변경
+        binary=copy.copy(gray)
+        binary[np.where((gray >= num_min) & (gray <= num_max))] = 255
+        binary[np.where((gray < num_min) | (gray > num_max))] = 0
 
         contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        del binary
         contours = list(filter(lambda cnt: cv2.contourArea(cnt) >= self.min_contour_size and cv2.contourArea(cnt) <= self.max_contour_size, contours))
         
         # 수직선 그리기
@@ -258,7 +260,6 @@ class object_get:
         if contours:  # contours 리스트가 비어있지 않은 경우에만 실행
             contour = max(contours, key=cv2.contourArea)  # 가장 큰 윤곽선 선택
             hull = cv2.convexHull(contour)
-            del contours, contour
 
             # frame 전체에 대해 윤곽선 그리기
             cv2.drawContours(frame[horizontal_line_y-self.sub_line_y:, self.sub_line_x:-self.sub_line_x], [hull], -1, (0, 255, 0), 3)
@@ -276,9 +277,9 @@ class object_get:
                     # 윤곽선 이미지 추출
                     edit_frame = edit_gray[y:y+h, x:x+w].copy()
 
-                    return frame, (x, y, w, h), edit_frame
+                    return frame, (x, y, w, h), edit_frame, binary
 
-        return frame, 0, None
+        return frame, 0, None, binary
 
 '''
 -------------------------------------------테스트-------------------------------------------

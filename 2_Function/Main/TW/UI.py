@@ -12,8 +12,8 @@ import DATA.base64_data as B64D
 class MainView(QWidget):
     def __init__(self):
         super().__init__()
-        self.ssim_num = 80
-        self.thread_num = 80
+        self.num_min =70
+        self.num_max = 150
         self.unit_name = "empty"
         self.IC = ImageCV()
         self.run = True
@@ -29,41 +29,42 @@ class MainView(QWidget):
         self.video_label_2 = QLabel(self)
         self.text_label = QLabel("ㅤㅤ", self)
         self.TW_logo_image = QLabel(self)
-        self.ssim_text_label = QLabel("SSIM", self)
-        self.ssim_text_edit = QLineEdit(str(self.ssim_num), self)
-        self.thread_text_label = QLabel("THREAD", self)
-        self.thread_text_edit = QLineEdit(str(self.thread_num),self)
+        self.min_text_label = QLabel("MIN", self)
+        self.min_text_edit = QLineEdit(str(self.num_min), self)
+        self.max_text_label = QLabel("MAX", self)
+        self.max_text_edit = QLineEdit(str(self.num_max),self)
         self.apply_button = QPushButton('&APPLY', self)
 
         # 스타일 적용
         self.video_label_1.setStyleSheet(self.label_style)
         self.video_label_2.setStyleSheet(self.label_style)
         self.text_label.setStyleSheet(self.label_style)
-        self.ssim_text_label.setStyleSheet(self.label_style)
-        self.ssim_text_edit.setStyleSheet(self.edit_style)
-        self.thread_text_label.setStyleSheet(self.label_style)
-        self.thread_text_edit.setStyleSheet(self.edit_style)
+        self.min_text_label.setStyleSheet(self.label_style)
+        self.min_text_edit.setStyleSheet(self.edit_style)
+        self.max_text_label.setStyleSheet(self.label_style)
+        self.max_text_edit.setStyleSheet(self.edit_style)
         self.apply_button.setStyleSheet(self.button_style)
 
         self.video_label_1.setAlignment(Qt.AlignCenter)
         self.video_label_2.setAlignment(Qt.AlignCenter)
         self.text_label.setAlignment(Qt.AlignCenter)
-        self.ssim_text_label.setAlignment(Qt.AlignCenter)
-        self.ssim_text_edit.setAlignment(Qt.AlignCenter)
-        self.thread_text_label.setAlignment(Qt.AlignCenter)
-        self.thread_text_edit.setAlignment(Qt.AlignCenter)
+        self.min_text_label.setAlignment(Qt.AlignCenter)
+        self.min_text_edit.setAlignment(Qt.AlignCenter)
+        self.max_text_label.setAlignment(Qt.AlignCenter)
+        self.max_text_edit.setAlignment(Qt.AlignCenter)
 
-        self.ssim_text_edit.setFixedHeight(50)
-        self.thread_text_edit.setFixedHeight(50)
+        self.min_text_edit.setFixedHeight(50)
+        self.max_text_edit.setFixedHeight(50)
         self.apply_button.setFixedHeight(50)
         self.apply_button.setCheckable(True)
         self.apply_button.toggle()
         self.apply_button.clicked.connect(self.button_clicked)
 
-        validator = QIntValidator(0, 999, self)
+        min_validator = QIntValidator(0, 254, self)
+        max_validator = QIntValidator(1, 255, self)
 
-        self.ssim_text_edit.setValidator(validator)
-        self.thread_text_edit.setValidator(validator)
+        self.min_text_edit.setValidator(min_validator)
+        self.max_text_edit.setValidator(max_validator)
 
         # 이미지 설정
         pixmap = QPixmap()
@@ -85,28 +86,37 @@ class MainView(QWidget):
         grid.addWidget(self.video_label_1,  0, 0, 10, 6)
         grid.addWidget(self.video_label_2, 0, 6, 5, 4)
         grid.addWidget(self.text_label, 5, 6, 5, 4)
-        grid.addWidget(self.ssim_text_label, 10, 0, 1, 1)
-        grid.addWidget(self.ssim_text_edit, 10, 1, 1, 3)
-        grid.addWidget(self.thread_text_label, 10, 4, 1, 1)
-        grid.addWidget(self.thread_text_edit, 10, 5, 1, 3)
+        grid.addWidget(self.min_text_label, 10, 0, 1, 1)
+        grid.addWidget(self.min_text_edit, 10, 1, 1, 3)
+        grid.addWidget(self.max_text_label, 10, 4, 1, 1)
+        grid.addWidget(self.max_text_edit, 10, 5, 1, 3)
         grid.addWidget(self.apply_button, 10, 8, 1, 2)
         grid.addLayout(hbox, 11, 0, 1, 10)
         self.setLayout(grid)
 
     def button_clicked(self):
         try:
-            self.ssim_num = int(self.ssim_text_edit.text())
+            self.num_min = int(self.min_text_edit.text())
         except ValueError:
-            self.ssim_num = 80
-            self.ssim_text_edit.setText(str(self.ssim_num))
+            self.num_min = 80
+            self.min_text_edit.setText(str(self.num_min))
         try:
-            self.thread_num = int(self.thread_text_edit.text())
+            self.num_max = int(self.max_text_edit.text())
         except ValueError:
-            self.thread_num = 80
-            self.thread_text_edit.setText(str(self.ssim_num))
+            self.num_max = 120
+            self.max_text_edit.setText(str(self.num_max))
 
-        print(self.ssim_num, self.thread_num)
-        
+        # min 값이 max 값보다 클 경우, min을 (max - 1)로 설정
+        # max 값이 min 값보다 작을 경우, max를 (min + 1)로 설정
+        if self.num_min > self.num_max:
+            self.num_min = self.num_max - 1
+            self.min_text_edit.setText(str(self.num_min))
+        elif self.num_max < self.num_min:
+            self.num_max = self.num_min + 1
+            self.max_text_edit.setText(str(self.num_max))
+
+        print(self.num_min, self.num_max)
+
     def show(self) -> None:
         '''로딩 화면을 전체 화면으로 표시하는 함수입니다.'''
         super().showFullScreen()
