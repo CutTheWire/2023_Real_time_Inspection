@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 
 # 이미지 파일 경로
 img1 = cv2.imread("C:\\Users\\sjmbe\\TW\\NUT\\231108\\1-1\\105003_SUA502M.jpg", cv2.IMREAD_GRAYSCALE)
-img2 = cv2.imread("C:\\Users\\sjmbe\\TW\\NUT\\231108\\1-1\\105003_SUA502M.jpg", cv2.IMREAD_GRAYSCALE)
-# img2 = cv2.imread("C:\\Users\\sjmbe\\TW\\NUT\\231108\\0\\105719_SUA502M.jpg", cv2.IMREAD_GRAYSCALE)
+img2 = cv2.imread("C:\\Users\\sjmbe\\TW\\NUT\\231108\\1-1\\105742_SUA502M.jpg", cv2.IMREAD_GRAYSCALE)
 
 # AKAZE 디텍터 생성
 akaze = cv2.AKAZE_create()
@@ -47,12 +47,12 @@ else:
     total_error = sum(errors)
     print("Score: ", total_error)
     # 결과 이미지 출력
-    axs[0].imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+    axs[1].imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
     # 오차를 그래프로 표시
-    axs[1].plot(errors)
-    axs[1].set_title('Error of Matching Line Lengths')
-    axs[1].set_xlabel('Matched Line Index')
-    axs[1].set_ylabel('Error')
+    axs[0].plot(errors)
+    axs[0].set_title('Error of Matching Line Lengths')
+    axs[0].set_xlabel('Matched Line Index')
+    axs[0].set_ylabel('Error')
 
     plt.tight_layout()
     plt.show()

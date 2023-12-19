@@ -12,7 +12,7 @@ import DATA.base64_data as B64D
 class MainView(QWidget):
     def __init__(self):
         super().__init__()
-        self.num_min =70
+        self.num_min =70 
         self.num_max = 150
         self.unit_name = "empty"
         self.IC = ImageCV()

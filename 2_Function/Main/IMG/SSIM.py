@@ -51,14 +51,11 @@ def detect_defects(frame_a: np.ndarray) -> Tuple[int, float]:
         
         # AKAZE 디텍터 생성
         akaze = cv2.AKAZE_create()
-
-        # 키 포인트 검출 및 디스크립터 계산
         kp1, des1 = akaze.detectAndCompute(img_chisqr, None)
         kp2, des2 = akaze.detectAndCompute(frame, None)
 
         # BFMatcher 객체 생성
         bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
-
         # 매칭
         matches = bf.match(des1, des2)
         errors = []

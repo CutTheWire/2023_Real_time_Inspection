@@ -182,10 +182,8 @@ class ImageCV:
         Input : 원본 이미지, 추출 이미지\n
         Output : 마스크 이미지
         '''
-        # 이미지를 그레이스케일로 변환
-        gray = self.gray(image)
         # 임계값 설정
-        _, mask = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY_INV)
+        _, mask = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY_INV)
         return mask
     
     def Background_Area(self, image: np.ndarray) -> np.ndarray:
@@ -234,18 +232,12 @@ class object_get:
 
     def get(self, frame: np.ndarray, width: int, height: int, num_max: int, num_min: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
         horizontal_line_y = height // 2
-        # frame의 일부를 선택하여 gray와 binary 생성
-        if len(frame.shape) == 3:
-            gray = cv2.cvtColor(frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x], cv2.COLOR_BGR2GRAY)
-        else:
-            gray = frame[(horizontal_line_y-self.sub_line_y):, self.sub_line_x:-self.sub_line_x]
-        edit_gray = copy.deepcopy(gray)
+        gray = copy.deepcopy(frame[(horizontal_line_y-self.sub_line_y):,self.sub_line_x:-self.sub_line_x])
+        edit_gray = copy.copy(gray)
         # 조건에 맞는 픽셀 값 변경
-        binary=copy.copy(gray)
-        binary[np.where((gray >= num_min) & (gray <= num_max))] = 255
-        binary[np.where((gray < num_min) | (gray > num_max))] = 0
+        gray[np.where((gray < num_min) | (gray > num_max))] = 0
 
-        contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours = list(filter(lambda cnt: cv2.contourArea(cnt) >= self.min_contour_size and cv2.contourArea(cnt) <= self.max_contour_size, contours))
         
         # 수직선 그리기
@@ -277,9 +269,9 @@ class object_get:
                     # 윤곽선 이미지 추출
                     edit_frame = edit_gray[y:y+h, x:x+w].copy()
 
-                    return frame, (x, y, w, h), edit_frame, binary
+                    return frame, (x, y, w, h), edit_frame, gray
 
-        return frame, 0, None, binary
+        return frame, 0, None, gray
 
 '''
 -------------------------------------------테스트-------------------------------------------
