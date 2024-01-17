@@ -226,9 +226,9 @@ class object_get:
     def __init__(self) -> None:
         self.last_counted_time = None
         self.min_contour_size = 10000
-        self.max_contour_size = 50000
+        self.max_contour_size = 500000
         self.sub_line_y = 150
-        self.sub_line_x = 400
+        self.sub_line_x = 600
 
     def get(self, frame: np.ndarray, width: int, height: int, num_max: int, num_min: int) -> Union[Tuple[np.ndarray, int], Tuple[np.ndarray, tuple]]:
         horizontal_line_y = height // 2
@@ -263,14 +263,11 @@ class object_get:
                 if self.last_counted_time is None or (current_time - self.last_counted_time).total_seconds() > 1.6:
                     self.last_counted_time = current_time
                     del current_time
-
                     x, y, w, h = cv2.boundingRect(hull)
-
                     # 윤곽선 이미지 추출
-                    edit_frame = edit_gray[y:y+h, x:x+w].copy()
+                    edit_frame = edit_gray[y+int(h*0.2):y+h-int(h*0.3), x+int(w*0.2):x+w-int(w*0.2)].copy()
 
                     return frame, (x, y, w, h), edit_frame, gray
-
         return frame, 0, None, gray
 
 '''

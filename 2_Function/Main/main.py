@@ -68,8 +68,9 @@ class main(MainView):
                 if retval == QMessageBox.Ok:
                     os.kill(os.getpid(), signal.SIGTERM)
             else:
-                self.msg.setWindowTitle("ERROR")
-                self.msg.setText(str(T()))
+                self.msg.setWindowTitle("SYSTEM ERROR")
+                self.msg.setText( """사용중인 시스템 하드웨어의 상태를 확인 불가능 합니다.
+                                \n해당 오류 창에 대한 내용을 업체에 문의하시길 바랍니다. """)
                 retval = self.msg.exec_()
                 if retval == QMessageBox.Ok:
                     os.kill(os.getpid(), signal.SIGTERM)
@@ -84,14 +85,14 @@ class main(MainView):
             lock.release()
             self.close()
             sys.exit()
-            s
+            
     def ssim_process(self, framea: np.ndarray) -> Tuple[int, float, np.ndarray]:
         '''
         ssim_process 함수는 이미지의 SSIM(Structural Similarity Index)를 계산
         이 함수에서는 framea 이미지를 받아서 적절한 크기로 조정하고
         이를 Mask 메소드를 사용하여 처리한 후에, DD(detect_defects) 함수를 호출합니다.
         '''
-        mask = self.IC.Mask(framea, 80)
+        mask = self.IC.Mask(framea, 172)
         # result = self.p.apply_async(DD, args=(mask,))
         # defects_num, ssim_value = result.get()
         defects_num, ssim_value = DD(mask)
@@ -102,17 +103,17 @@ class main(MainView):
     
     def list_output(self, defects_num: int, ssim_value: float) -> str:
         if defects_num == 1:
-            self.text_label.setText(f"정상\n{round(ssim_value,2)}")
+            self.text_label.setText(f"정상")
             self.text_label.setStyleSheet("background-color: #FFFFFF; color: #35B558; font-size: 75pt; border-radius: 10px;")
             self.text_label.setAlignment(Qt.AlignCenter)  # Add this line
             defects_name = "O"
         elif defects_num == 0:
-            self.text_label.setText(f"불량\n{round(ssim_value,2)}")
+            self.text_label.setText(f"불량")
             self.text_label.setStyleSheet("background-color: #FFFFFF; color: #B43437; font-size: 75pt; border-radius: 10px;")
             self.text_label.setAlignment(Qt.AlignCenter)  # This line is already here
             defects_name = "X"
         else:
-            self.text_label.setText(f"확인 필요\n{round(ssim_value,2)}")
+            self.text_label.setText(f"확인 필요")
             self.text_label.setStyleSheet("background-color: #FFFFFF; color: #C7C53A; font-size: 75pt; border-radius: 10px;")
             self.text_label.setAlignment(Qt.AlignCenter)  # Add this line
             defects_name = "X"
@@ -130,15 +131,15 @@ class main(MainView):
         if self.mvapp.frame is not None:
             return self.mvapp.frame
         else:
-            return M.cam.get_frame()
+            pass
 
     def updata_frame(self):
         frame = self.cam_check()
-        frame = self.IC.gray(frame)
+        # frame = self.IC.gray(frame)
         width, height = self.IC.Scale_Resolution(frame, 1)
         frame = cv2.resize(frame, (width, height))
         framea = copy.deepcopy(frame)
-        framea= self.IC.gray(framea)
+        # framea= self.IC.gray(framea)
         try:
             frame, num, edit_image, binary = self.ob.get(frame, width, height, self.num_max, self.num_min)
         except:
@@ -146,14 +147,15 @@ class main(MainView):
         self.video_label_update(frame, self.video_label_1)
 
         if num != 0:
-            defects_num, ssim_value, framea, mask = self.ssim_process(edit_image)
-            # self.Ar.move(defects_num)
-            self.video_label_update(edit_image, self.video_label_2)
-            defects_name = self.list_output(defects_num, ssim_value)
-
-            # self.SV.nut_image_save(framea, defects_name, ssim_value)
-            self.SV.nut_image_save(mask, defects_name, ssim_value)
-            self.SV.nut_image_save(edit_image, "image", ssim_value)
+            try:
+                defects_num, ssim_value, framea, mask = self.ssim_process(edit_image)
+                self.Ar.move(defects_num)
+                self.video_label_update(edit_image, self.video_label_2)
+                defects_name = self.list_output(defects_num, ssim_value)
+                self.SV.nut_image_save(mask, defects_name, ssim_value)
+                self.SV.nut_image_save(edit_image, "image", ssim_value)
+            except:
+                self.Ar.move(0)
 
 if __name__ == "__main__":
     # 락을 생성합니다.
@@ -171,16 +173,16 @@ if __name__ == "__main__":
         M = main()
         app = QApplication(sys.argv)
         M.check(loading_screen)
-        # M.Ar_check(loading_screen)
+        M.Ar_check(loading_screen)
         M.cam.open_camera()
         M.start()
         M.show()
         loading_screen.close()
+        del loading_screen
 
         while M.run:
             try:
                 M.updata_frame()
-                time.sleep(0.05)
             except:
                 pass
             QApplication.processEvents()
@@ -191,5 +193,3 @@ if __name__ == "__main__":
         if acquired:
             lock.release()
             os.kill(os.getpid(), signal.SIGTERM)
-            # M.p.close()
-            # M.p.join()

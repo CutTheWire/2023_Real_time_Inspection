@@ -75,7 +75,7 @@ def detect_defects(frame_a: np.ndarray) -> Tuple[int, float]:
             avg_length_img1 = total_length / line_count
             # 비교 이미지의 매칭 선 길이와 기준 이미지의 선 길이와의 오차 계산
             errors = [abs(l - avg_length_img1) for l in lengths]
-            # 기준 이미지의 매칭 선 수가 비교 이미지의 선 수보다 많은 경우, 부족한 선 수만큼 오차를 50으로 할당하여 errors 리스트에 추가
+            # 기준 이미지의 매칭 선 수가 비교 이미지의 선 수보다 많은 경우, 부족한 선 수만큼 오차를 50으로 할당하여 errors 리스트에 추가.
             if len(kp1) > len(kp2):
                 errors.extend([50] * (len(kp1) - len(kp2)))
             # 오차값 합계 계산
@@ -88,9 +88,15 @@ def detect_defects(frame_a: np.ndarray) -> Tuple[int, float]:
     # 가장 높은 ssim_value를 target_value로 설정합니다.
     target_value = max_ssim_value
     # target_value에 따라 다른 값을 반환합니다.
-    if  target_value < 4000:
+    if  65< target_value and target_value < 4000:
         return 1, target_value
     elif 4000 < target_value and target_value < 4500:
         return 2, target_value
     else:
         return 0, target_value
+    # if  5000 > target_value and target_value > 2000:
+    #     return 1, target_value
+    # elif 2000 < target_value and target_value < 2500:
+    #     return 2, target_value
+    # else:
+    #     return 0, target_value

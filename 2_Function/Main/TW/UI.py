@@ -3,7 +3,8 @@ from PyQt5.QtGui import QPixmap, QImage, QIntValidator
 from PyQt5.QtCore import Qt
 import cv2
 import numpy as np
-import fasteners
+import configparser
+import os
 import base64
 
 from IMG.IPP import ImageCV
@@ -12,8 +13,10 @@ import DATA.base64_data as B64D
 class MainView(QWidget):
     def __init__(self):
         super().__init__()
-        self.num_min =70 
-        self.num_max = 150
+                # 추가: configparser 객체 생성 및 파일 경로 설정
+        self.config = configparser.ConfigParser()
+        self.ini_file_path = os.path.expanduser("~\\Documents\\TW\\config.ini")
+        self.load_config()
         self.unit_name = "empty"
         self.IC = ImageCV()
         self.run = True
@@ -94,28 +97,39 @@ class MainView(QWidget):
         grid.addLayout(hbox, 11, 0, 1, 10)
         self.setLayout(grid)
 
+    def load_config(self):
+        '''ini 파일이 존재하면 설정을 불러오고, 없으면 기본값 설정'''
+        if os.path.exists(self.ini_file_path):
+            self.config.read(self.ini_file_path)
+            self.num_min = self.config.getint('Settings', 'num_min')
+            self.num_max = self.config.getint('Settings', 'num_max')
+            self.unit_name = self.config.get('Settings', 'unit_name')
+        else:
+            self.num_min = 135
+            self.num_max = 256
+            self.unit_name = "empty" # 부품 이름을 지정하는 UI를 추가시 해당 변수 사용
+        self.save_config()
+
+    def save_config(self):
+        '''설정을 ini 파일에 저장'''
+        self.config['Settings'] = {'num_min': str(self.num_min), 'num_max': str(self.num_max), 'unit_name': self.unit_name}
+        with open(self.ini_file_path, 'w') as configfile:
+            self.config.write(configfile)
+
     def button_clicked(self):
+        '''인식 범위를 지정하는 함수입니다.'''
         try:
             self.num_min = int(self.min_text_edit.text())
         except ValueError:
-            self.num_min = 80
+            self.num_min = 135
             self.min_text_edit.setText(str(self.num_min))
         try:
             self.num_max = int(self.max_text_edit.text())
         except ValueError:
-            self.num_max = 120
+            self.num_max = 256
             self.max_text_edit.setText(str(self.num_max))
-
-        # min 값이 max 값보다 클 경우, min을 (max - 1)로 설정
-        # max 값이 min 값보다 작을 경우, max를 (min + 1)로 설정
-        if self.num_min > self.num_max:
-            self.num_min = self.num_max - 1
-            self.min_text_edit.setText(str(self.num_min))
-        elif self.num_max < self.num_min:
-            self.num_max = self.num_min + 1
-            self.max_text_edit.setText(str(self.num_max))
-
-        print(self.num_min, self.num_max)
+        self.save_config()
+        print(f"저장된 범위{self.num_min, self.num_max}")
 
     def show(self) -> None:
         '''로딩 화면을 전체 화면으로 표시하는 함수입니다.'''

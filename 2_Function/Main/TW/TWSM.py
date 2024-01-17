@@ -28,8 +28,8 @@ class TW:
             try:
                 result = self.cpu_info + self.LogicalDisk
                 return self == result
-            except Exception as e:
-                return e
+            except:
+                return 3
         else:
             return 2
         
